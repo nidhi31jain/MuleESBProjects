@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+
+	 <configuration doc:name="Configuration"> 
+	    <expression-language autoResolveVariables="true">
+    	    <import class="org.mule.util.StringUtils" />
+    	</expression-language>
+	</configuration>
+    <http:listener-config name="HTTP_Listener_Configuration" host="localhost" port="8081"  doc:name="HTTP Listener Configuration"/>
+    
+    <flow name="scattergatherFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="scatter" allowedMethods="GET" doc:name="HTTP" parseRequest="false" responseStreamingMode="ALWAYS"/>
+        <logger message="params:::#[message.inboundProperties['http.query.params'].get(&quot;source&quot;)] \n #[message.inboundProperties['http.query.params'].get(&quot;destination&quot;)]" level="INFO" doc:name="Logger"/>
+        <set-variable variableName="searchInput" value="#[new FlightInput();]" doc:name="searchInput"/>
+        <expression-component doc:name="Expression"><![CDATA[import FlightInput;
+FlightInput  input =  new FlightInput();
+input.source =message.inboundProperties['http.query.params'].get("source");
+input.destination =message.inboundProperties['http.query.params'].get("destination");
+flowVars.searchInput = input;
+]]></expression-component>
+        <http:static-resource-handler resourceBase="${app.home}/" defaultFile="airfares.txt" doc:name="HTTP Static Resource Handler"/>
+        <byte-array-to-string-transformer returnClass="java.lang.String" doc:name="Byte Array to String"/>
+        <logger message="search Input variable:::#[flowVars.searchInput]" level="INFO" doc:name="Logger"/>
+        <component class="CheapAirFairPredictor" doc:name="Java"/>
+        <logger message="OUTPUT:::#[payload]${app.home}/" level="INFO" doc:name="Logger"/>
+    </flow>
+
+</mule>

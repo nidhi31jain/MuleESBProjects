@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:mongo="http://www.mulesoft.org/schema/mule/mongo" xmlns:servlet="http://www.mulesoft.org/schema/mule/servlet" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:schedulers="http://www.mulesoft.org/schema/mule/schedulers" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/schedulers http://www.mulesoft.org/schema/mule/schedulers/current/mule-schedulers.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/servlet http://www.mulesoft.org/schema/mule/servlet/current/mule-servlet.xsd
+http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mongo/current/mule-mongo.xsd">
+   
+   <configuration doc:name="Configuration"> 
+	    <expression-language autoResolveVariables="true">
+    	    <import class="org.mule.util.StringUtils" />
+    	</expression-language>
+	</configuration>
+    <vm:connector name="VM" validateConnections="true" doc:name="VM"/>
+    <http:request-config name="HTTP_Request_Configuration" host="localhost" port="8080" basePath="/" doc:name="HTTP Request Configuration"/>
+    <mongo:config name="Mongo_DB" doc:name="Mongo DB">
+        <mongo:connection-pooling-profile initialisationPolicy="INITIALISE_ONE" exhaustedAction="WHEN_EXHAUSTED_GROW"/>
+    </mongo:config>
+    <flow name="mainflow">
+        <poll doc:name="Poll">
+            <fixed-frequency-scheduler frequency="1" timeUnit="DAYS"/>
+            <component class="FilePollingComponent" doc:name="Java"/>
+        </poll>
+        <logger message="#[message.outboundProperties['fileList']]" level="INFO" doc:name="Logger"/>
+        <set-variable variableName="employeeList" value="#[new java.util.LinkedList()]" doc:name="Variable"/>
+        <foreach rootMessageVariableName="filepath" doc:name="forEach Files in folder" collection="#[message.outboundProperties['fileList']]">
+            <file:file-to-string-transformer doc:name="File to String" />
+            <flow-ref name="subflow_LineParser" doc:name="subflow_LineParser"/>
+
+           
+        </foreach>
+        <logger message="mongo paylod is :#[payload]" level="INFO" doc:name="Logger"/>
+        <enricher  target="#[flowVars.isCollectionExists]" doc:name="Message Enricher">
+            <mongo:exists-collection config-ref="Mongo_DB" collection="T_employee" doc:name="Mongo DB"/>
+        </enricher>
+        <choice doc:name="check existence of collection.">
+            <when expression="!flowVars['isCollectionExists']">
+                <mongo:create-collection config-ref="Mongo_DB" collection="T_employee" doc:name="createNewCollection"/>
+            </when>
+            <otherwise>
+                <logger message="collection already exists" level="INFO" doc:name="Logger"/>
+            </otherwise>
+        </choice>
+        <foreach collection="#[flowVars.employeeList]" counterVariableName="finalcounter" rootMessageVariableName="finalrootMessage" doc:name="For Each">
+            <json:object-to-json-transformer mimeType="application/json" doc:name="Object to JSON"/>
+            <logger message="Message enricher payload :::#[payload]" level="INFO" doc:name="Logger"/>
+            <mongo:save-object config-ref="Mongo_DB" collection="T_employee" doc:name="Mongo DB"/>
+			<!--
+			if flowvar is used as target variable it wont work first variable will not be bind next loop only it gets the value.
+			<enricher source="#[flowVars.employeeList[finalcounter-1]]" target="#[flowVars.employeeBean]" doc:name="Message Enricher">
+			 -->
+        </foreach>
+       
+    </flow>
+    <sub-flow name="subflow_LineParser">
+        <logger message="#[message.payload]" level="INFO" doc:name="Logger"/>
+        <expression-transformer expression="#[StringUtils.split(message.payload,'\n\r');]" doc:name="Expression" returnSourceIfNull="true"/>
+        <foreach collection="#[message.payload]" counterVariableName="linecounter" rootMessageVariableName="lineRootMessage" doc:name="For Each">
+            <flow-ref name="subflow_fileTokenizer" metadata:id="a5d971f0-d3f5-47fd-98dc-0293c67c70d7" doc:name="subflow_fileTokenizer"/>
+        </foreach>
+    </sub-flow>
+    <sub-flow name="subflow_fileTokenizer">
+        <expression-transformer expression="#[StringUtils.split(message.payload,'|');]" doc:name="Expression" returnClass="java.lang.String[]"/>
+        <expression-component doc:name="Expression"><![CDATA[import Employee;
+			Employee emp = new Employee();
+			emp.set_id(Integer.parseInt(payload[0]));
+			emp.setName(payload[1]);
+			emp.setAddress(payload[2]);
+			flowVars.employeeList.add(emp);
+			payload= flowVars.employeeList;
+		]]></expression-component>
+        <json:object-to-json-transformer mimeType="application/json" doc:name="Object to JSON"/>
+    </sub-flow>
+
+</mule> 

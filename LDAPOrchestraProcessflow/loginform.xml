@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ldap="http://www.mulesoft.org/schema/mule/ldap" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ldap http://www.mulesoft.org/schema/mule/ldap/current/mule-ldap.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <ldap:config name="LDAP__Configuration" authDn="cn=read-only-admin,dc=example,dc=com" 
+      authPassword="password" url="ldap://ldap.forumsys.com" doc:name="LDAP" authentication="simple">
+      
+     <ldap:extended-configuration >
+
+     </ldap:extended-configuration>
+     </ldap:config> 
+      
+    
+
+    <http:listener-config name="HTTP_Listener_Configuration" host="localhost" port="8081"  doc:name="HTTP Listener Configuration"/>
+    <flow name="mainflow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/checkstatus" allowedMethods="GET" doc:name="HTTP"/>
+        <ldap:ldap-entry-to-ldif config-ref="LDAP__Configuration" doc:name="LDAP"></ldap:ldap-entry-to-ldif>
+        <set-variable variableName="username" value="#[message.inboundProperties['http.query.params'].username]" doc:name="username"/>
+        <logger message="username 11111111: #[message.inboundProperties['http.query.params'].username]" level="INFO" doc:name="Logger"/>
+        <processor-chain doc:name="Processor Chain">
+            <flow-ref name="loginformFlow" doc:name="loginCheckFlow"/>
+            <logger message="Login ::::: #[payload]" level="INFO" doc:name="Logger"/>
+            <choice doc:name="Choice">
+                <when expression="#[payload==false]">
+                    <set-payload value="Login #[message.inboundProperties['http.query.params'].username] is not Authroized to Login" doc:name="Set Payload"/>
+                </when>
+                <otherwise>
+                    <flow-ref name="checkAirfares" doc:name="checkAirfares"/>
+                    <flow-ref name="checkBalanceAndPay" doc:name="checkBalanceAndPay"/>
+                </otherwise>
+            </choice>
+        </processor-chain>
+    </flow>
+    <flow name="loginformFlow">
+         <parse-template location="${app.home}\index.html" doc:name="Parse Template"/> 
+        <set-variable variableName="loginPage" value="#[payload]" doc:name="Variable"/>
+        <ldap:exists config-ref="LDAP__Configuration"   doc:name="LDAP" dn="cn=#[message.inboundProperties['http.query.params'].username],dc=example,dc=com"/>
+        <component class="LoginAuthenticator" doc:name="Java"/>
+        <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+       
+    </flow>
+    <flow name="checkAirfares">
+		        <set-variable variableName="searchInput" value="#[new FlightInput();]" doc:name="searchInput"/>
+		        <expression-component doc:name="Expression"><![CDATA[import FlightInput;
+		FlightInput  input =  new FlightInput();
+		input.source =message.inboundProperties['http.query.params'].get("source");
+		input.destination =message.inboundProperties['http.query.params'].get("destination");
+		flowVars.searchInput = input;
+		]]></expression-component>
+		        <http:static-resource-handler resourceBase="${app.home}/" defaultFile="airfares.txt" doc:name="HTTP Static Resource Handler"/>
+		        <byte-array-to-string-transformer returnClass="java.lang.String" doc:name="Byte Array to String"/>
+		        <component class="CheapAirFairPredictor" doc:name="Java"/>
+    
+    </flow>
+    <flow name="checkBalanceAndPay">
+        <component class="BankBalanceChecker" doc:name="Java"/>
+    </flow>
+</mule>
