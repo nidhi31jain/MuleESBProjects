@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+	xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:ws="http://www.mulesoft.org/schema/mule/ws"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd">
+	<configuration doc:name="Configuration">
+		<http:config useTransportForUris="true" />
+	</configuration>
+
+	<ws:consumer-config name="TestJavaWeb_Service_Consumer"
+		wsdlLocation="http://localhost:9085/ESCS/AircraftEngineInfoService/AircraftEngineInfoService.wsdl" service="AircraftEngineInfoService"
+		port="AircraftEngineInfoPort" serviceAddress="http://localhost:9085/ESCS/AircraftEngineInfoService"
+		doc:name="Web Service Consumer" />
+	<http:listener-config name="TestJavaHTTP_Listener_Configuration"
+		host="localhost" port="8081" doc:name="HTTP Listener Configuration">
+
+	</http:listener-config>
+
+	<flow name="TestJavainputflow">
+        <http:listener config-ref="TestJavaHTTP_Listener_Configuration" path="/service" allowedMethods="GET" metadata:id="acfc39ea-c98d-4d68-9b74-3b82acde084d" doc:name="HTTP">
+          <http:response-builder statusCode="200"/>
+        </http:listener>
+
+
+
+		<set-variable variableName="aircraftNumber"
+			value="#[message.inboundProperties['http.query.params'].aircraftNumber]"
+			doc:name="Variable" mimeType="application/json" />
+		<expression-component doc:name="Expression"><![CDATA[import java.lang.String;
+String msg ="<soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:air='http://safety.test.com/aircraftengineinfo'><soapenv:Header/>   <soapenv:Body>      <air:AircraftEngineInfoRequest>         <air:aircraftNumber>09559</air:aircraftNumber>      </air:AircraftEngineInfoRequest>   </soapenv:Body></soapenv:Envelope>";
+payload=msg;]]></expression-component>
+		<logger message="Request::::#[payload]" level="INFO" doc:name="Logger" />
+		<ws:consumer config-ref="TestJavaWeb_Service_Consumer" operation="AircraftEngineInfo"
+			doc:name="Web Service Consumer" />
+		<logger
+			message="#[message.inboundProperties['http.query.params'].aircraftNumber]"
+			level="INFO" doc:name="Logger" />
+		<logger message="Message Request :::: #[payload]" level="INFO"
+			doc:name="Logger" />
+		
+	</flow>
+</mule>
