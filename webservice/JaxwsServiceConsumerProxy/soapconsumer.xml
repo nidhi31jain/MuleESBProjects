@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:wmq="http://www.mulesoft.org/schema/mule/ee/wmq" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
+http://www.mulesoft.org/schema/mule/ee/wmq http://www.mulesoft.org/schema/mule/ee/wmq/current/mule-wmq-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+	<http:request-config name="consumer_response_Configuration"
+		host="localhost" port="8081" doc:name="HTTP Request Configuration" />
+		
+	
+    
+		
+	<flow name="soapconsumer" >
+		<http:listener config-ref="Provider_Configuration"
+			path="/response" doc:name="HTTP" allowedMethods="GET,POST">
+			<http:response-builder statusCode="200" />
+		</http:listener>
+        <expression-component doc:name="soap Input"><![CDATA[import provider.LoginRequest;
+LoginRequest request = new LoginRequest();
+
+request.setName(message.inboundProperties['http.query.params'].username);
+request.setPassword(message.inboundProperties['http.query.params'].password);
+request.setUserType(1);
+payload= request;
+]]></expression-component>
+        <response>
+            <logger level="INFO" doc:name="Logger"/>
+            <cxf:proxy-service service="provider.LoginIntf" payload="body" doc:name="CXF"/>
+        </response>
+
+        <cxf:jaxws-client operation="verify" serviceClass="provider.LoginIntf" soapVersion="1.2" metadata:id="3c923f5b-80bf-499b-8b39-5feb8174d2da" doc:name="request/response processor"/>
+        <logger message="soap Request :::#[message.payloadAs(java.lang.String)]" level="INFO" doc:name="Logger"/>
+        <http:request config-ref="consumer_response_Configuration" path="/service" method="POST" metadata:id="ccdf9d09-a861-4b81-b0ec-99be97e9f6af" doc:name="HTTP"/>
+        <logger message="Soap Response OUTPUT::::#[message.payloadAs(java.lang.String)]" level="INFO" doc:name="Logger"/>
+        <response>
+            <object-to-string-transformer mimeType="application/xml" doc:name="Object to String"/>
+        </response>
+
+
+	</flow>
+
+
+
+</mule>
