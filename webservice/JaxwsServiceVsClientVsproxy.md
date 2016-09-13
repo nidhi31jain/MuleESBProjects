@@ -54,8 +54,8 @@ payload= request;
 
 	</flow>
 
-Jaxws Proxy Service:
-===================
+ Improved Jaxws cosumer with Proxy Service in response:
+ ======================================================
 
 NOTE:
 =====
