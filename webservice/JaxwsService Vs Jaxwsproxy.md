@@ -3,8 +3,8 @@
                                        ================
                                        
  
- JAXWS Service
- ==============
+JAXWS Service
+==============
   <flow name="provider" >
         <http:listener config-ref="Provider_Configuration" path="/service" allowedMethods="GET,POST" metadata:id="2c83107f-94ed-4b29-afb0-464119e1d708" doc:name="HTTP">
             <http:error-response-builder statusCode="200"/>
@@ -16,8 +16,8 @@
     
     
     
-  JAXWS Proxy
- =============
+JAXWS Proxy
+=============
  
   <flow name="provider" >
         <http:listener config-ref="Provider_Configuration" path="/service" allowedMethods="GET,POST" metadata:id="2c83107f-94ed-4b29-afb0-464119e1d708" doc:name="HTTP">
