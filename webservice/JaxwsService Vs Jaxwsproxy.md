@@ -1,8 +1,7 @@
  
- service vs proxy
- ================
- 
- 
+                                       service vs proxy
+                                       ================
+                                       
  JAXWS Service
  ==============
  
