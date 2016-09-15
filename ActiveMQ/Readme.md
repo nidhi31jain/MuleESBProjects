@@ -75,3 +75,7 @@ Run the mule and check the queue it has message  "Hai From Mule"
 				</message-properties-transformer>
           </jms:outbound-endpoint>
 </flow>
+STEP 7:
+=======
+ony activemq-all-5.8.0.jar is needed in classpath of mule to run 
+add jars to classpath from installed activemq - C:\apache-activemq-5.8.0\activemq-all-5.8.0.jar
