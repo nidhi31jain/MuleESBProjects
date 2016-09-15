@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+
+<http:listener-config name="JMS_Consumer"
+		host="localhost" port="8082" doc:name="HTTP Listener Configuration" />
+
+<flow name="jms.single.consumer.single.node.trigger" >
+        <http:listener config-ref="JMS_Consumer" path="/consumer" doc:name="HTTP"/>
+		<scripting:transformer doc:name="Groovy">
+			<scripting:script engine="Groovy"><![CDATA[def result = []
+for(i in 1..50){
+	result.add(i)
+}
+println result
+return result]]></scripting:script>
+		</scripting:transformer>
+		
+		<logger
+			message="DELIVERY COUNT Receiver ::::::#[message.inboundProperties['JMSXDeliveryCount']]" doc:name="Logger"/>	
+		<foreach doc:name="For Each">
+			<object-to-string-transformer doc:name="Object to String" />
+			<remove-property propertyName="Content-Type"
+				doc:name="Remove Content-Type" />
+			<jms:outbound-endpoint connector-ref="activemq-retry"
+				queue="jms.consumer.noRetry" doc:name="jms.single.consumer.single.node" >
+              
+            </jms:outbound-endpoint>
+				
+			
+				
+		</foreach>
+		<object-to-string-transformer doc:name="Object to String" />
+
+	</flow>
+
+
+</mule>

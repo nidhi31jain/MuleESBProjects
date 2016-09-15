@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.7.3"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+
+	
+	<jms:activemq-connector name="activemq-retry"
+		brokerURL="tcp://localhost:61616" validateConnections="true" 
+		maxRedelivery="5" doc:name="Active MQ">
+	</jms:activemq-connector>
+
+
+	
+	
+	
+	
+	
+	<flow name="jms.consumer" 
+		processingStrategy="synchronous">
+		<jms:inbound-endpoint queue="jms.consumer.retry"
+			doc:name="jms.consumer" connector-ref="activemq-retry">
+			<jms:transaction action="ALWAYS_BEGIN" />
+		</jms:inbound-endpoint>
+		
+		<logger
+			message="DELIVERY COUNT RETRY CONSUMER ::::::#[message.inboundProperties['JMSXDeliveryCount']]" level="INFO" />
+<!-- 		<logger -->
+<!-- 			message="++++++++++++ In Process Message Number: #[payload] ++++++++++++" -->
+<!-- 			level="INFO" doc:name="Process" /> -->
+	</flow>
+
+
+
+</mule>

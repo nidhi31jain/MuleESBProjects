@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+	<!-- Queue -jms.single.consumer.single.node -->
+	<jms:activemq-connector name="activemq-retry-single-node"
+		brokerURL="tcp://localhost:61616" validateConnections="true"
+		maxRedelivery="5" numberOfConcurrentTransactedReceivers="1" doc:name="Active MQ">
+<!-- 		<service-overrides -->
+<!-- 			transactedMessageReceiver="org.mule.transport.jms.GuaranteeOrderDeliveryMessageReceiver" -->
+<!-- 			messageReceiver="org.mule.transport.jms.GuaranteeOrderDeliveryMessageReceiver" /> -->
+	</jms:activemq-connector>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<flow name="jms.single.consumer.single.node" 
+		processingStrategy="synchronous">
+		<jms:inbound-endpoint queue="jms.consumer.noRetry"
+			doc:name="jms.single.consumer" connector-ref="activemq-retry-single-node">
+            <jms:transaction action="ALWAYS_BEGIN"/>
+		</jms:inbound-endpoint>
+		
+		<logger
+			message="DELIVERY COUNT Consumer::::::#[message.inboundProperties['JMSXDeliveryCount']]" level="INFO" doc:name="Logger"/>
+		<logger
+			message="++++++++++++ In Process Message Number: #[payload] ++++++++++++"
+			level="INFO" doc:name="Process" />
+	</flow>
+	
+	
+</mule>
