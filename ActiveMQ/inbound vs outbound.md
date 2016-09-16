@@ -1,6 +1,6 @@
-							Inbound 
-							=======
-							
+						
+Inbound 
+=======							
 							
 <flow name="jms.single.consumer.single.node.trigger"
 		processingStrategy="synchronous">
