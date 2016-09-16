@@ -1,8 +1,9 @@
-Inbound 
-=======
+							Inbound 
+							=======
+							
 <flow name="jms.single.consumer.single.node.trigger"
 		processingStrategy="synchronous">
- 		<http:listener config-ref="JMS_Consumer" path="/consumer" 		doc:name="HTTP" /> 
+ 		<http:listener config-ref="JMS_Consumer" path="/consumer" doc:name="HTTP" /> 
 		<jms:inbound-endpoint queue="jms.message.post"
 			doc:name="consumer" connector-ref="activemq-retry-single-node">
            <jms:transaction action="ALWAYS_BEGIN"/>
@@ -40,12 +41,13 @@ see after commenting http-listener it works.
 outbound
 ========
 
-<flow name="jms.trigger">
-        <http:listener config-ref="JMS_Sender" path="/sender" doc:name="HTTP"/>
-	
-			<jms:outbound-endpoint connector-ref="activemq-retry"
-				queue="jms.message.post" doc:name="jms.consumer" />
-		</foreach>
-		<object-to-string-transformer doc:name="Object to String" />
+<flow name="response">
+  <http:listener config-ref="JMS_Consumer" path="/consumer"  
+  		doc:name="HTTP" />
+  <jms:outbound-endpoint queue="jms.message.post"
+		doc:name="consumer" connector-ref="activemq-retry-single-node">
+		<jms:transaction action="ALWAYS_BEGIN" />
+	</jms:outbound-endpoint>
 
-	</flow>
+</flow>
+     
