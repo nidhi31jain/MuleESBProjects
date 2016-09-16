@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="localhost" port="8083" doc:name="HTTP Listener Configuration"/>
+
+
+
+
+<!-- Queue -jms.retry.single.node.in -->
+	<flow name="checkFailureandResend" >
+      <!--   <http:listener config-ref="HTTP_Listener_Configuration" path="/resend" allowedMethods="GET" doc:name="HTTP">
+            <http:response-builder statusCode="200"/>
+        </http:listener> -->
+      <!-- 
+        
+        <jms:inbound-endpoint queue="jms.message.post"
+			doc:name="checkFailureReceiver" connector-ref="activemqReceiver">
+			<jms:transaction action="BEGIN_OR_JOIN" />
+
+		</jms:inbound-endpoint> 
+
+		<set-payload value="Failed message - Acknowledge - Received Message :::#[payload]"
+			doc:name="AckMessageHeader"></set-payload>
+			
+			
+		<jms:outbound-endpoint queue="jms.ack.post"
+			doc:name="JMSAckMessage" connector-ref="activemqReceiver">
+			<jms:transaction action="BEGIN_OR_JOIN" />
+		</jms:outbound-endpoint>  -->
+ 
+	
+		<logger
+			message="DELIVERY COUNT Sender ::::::#[message.inboundProperties]" doc:name="Logger"/>
+			
+			
+		<logger message="++++++++++++ In Process Message ++++++++++++"
+			level="INFO" doc:name="Process" />
+
+<!-- 		<scripting:component doc:name="Fake Exception"> -->
+<!-- 			<scripting:script engine="Groovy"><![CDATA[throw new Exception('Fake Exception')]]></scripting:script> -->
+<!-- 		</scripting:component> -->
+		<rollback-exception-strategy
+			maxRedeliveryAttempts="5" doc:name="Rollback Exception Strategy">
+			<logger
+				message="******************* Retry #[message.inboundProperties['JMSXDeliveryCount'] != null ? message.inboundProperties['JMSXDeliveryCount']:1] *******************"
+				level="INFO" doc:name="Retry" />
+			<expression-component doc:name="Expression"><![CDATA[#[flowVars.flowname = flow.name; return payload]]]></expression-component>
+
+			<tracking:custom-event event-name="jms.rety"
+				doc:name="jms.rety">
+				<tracking:meta-data key="jms.rety.count"
+					value="#[message.inboundProperties['JMSXDeliveryCount'] != null ? message.inboundProperties['JMSXDeliveryCount']:1]" />
+			</tracking:custom-event>
+            <choice doc:name="Choice">
+            	<when expression="message.inboundProperties['JMSXDeliveryCount'] != null &amp;&amp; message.inboundProperties['JMSXDeliveryCount'] &gt;4">
+            		<logger message="retries over 5" level="INFO" doc:name="Logger"/>
+            		<logger message="Payload before stop() #[payload]" level="INFO"
+					doc:name="Logger" />
+				<scripting:component doc:name="Groovy">
+					<scripting:script engine="Groovy"><![CDATA[muleContext.registry.lookupFlowConstruct(flowname).stop()]]></scripting:script>
+				</scripting:component>
+				<logger message="Payload after stop() #[payload]" level="INFO"
+					doc:name="Logger" />
+            	</when>
+                <otherwise>
+                    <logger level="INFO" message="Retry again." doc:name="Logger"/>
+                </otherwise>
+            </choice>
+			<on-redelivery-attempts-exceeded
+				>
+				<logger message="--------------- Redelivery Exhaused ---------------"
+					level="INFO" doc:name="Redelivery Exhaused" />
+				<tracking:custom-event event-name="jms.retries.exhausted"
+					doc:name="jms.retries.exhausted" />
+				
+			</on-redelivery-attempts-exceeded>
+		</rollback-exception-strategy>
+
+	</flow>
+	
+
+
+</mule>

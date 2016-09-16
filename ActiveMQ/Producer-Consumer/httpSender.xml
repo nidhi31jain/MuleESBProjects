@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+
+
+	<http:listener-config name="JMS_Sender" host="localhost"
+		port="8081" doc:name="HTTP Listener Configuration" />
+
+
+	<jms:activemq-connector name="activemqSender"
+		brokerURL="tcp://localhost:61616" validateConnections="true"
+		maxRedelivery="5" doc:name="Active MQ">
+	</jms:activemq-connector>
+
+	<flow name="jms.trigger">
+		<http:listener config-ref="JMS_Sender" path="/sender"
+			doc:name="HTTP" />
+	<!-- <scripting:transformer doc:name="Groovy"> 
+			<scripting:script engine="Groovy"><![CDATA[
+				def result = [] for(i in 1..5){ result.add("Message send ..."+i) } 
+				println result 
+				return result]]>
+			</scripting:script>
+		 </scripting:transformer> -->
+
+
+		<set-variable variableName="messageList"
+			value="#[messageList = new ArrayList();]" doc:name="Variable" />
+		<expression-component doc:name="Expression"><![CDATA[
+        import java.util.List;
+        import java.util.ArrayList;
+
+		List list = new ArrayList();
+		list.add("Hello from Sender  1");
+		list.add("Hello from Sender  2");
+		list.add("Hello from Sender  3");
+		list.add("Hello from Sender  4");
+		list.add("Hello from Sender  5");
+
+		flowVars.messageList =list;]]></expression-component>
+	
+		<!-- for loop list -->
+		<foreach doc:name="For Each" collection="#[flowVars.messageList]"
+			counterVariableName="index">
+		
+			<choice doc:name="Choice" tracking:enable-default-events="true">
+				<when expression="#[message.inboundProperties['JMSXDeliveryCount']!=null]">
+					<logger
+						message="DELIVERY COUNT Consumer::::::#[message.inboundProperties['JMSXDeliveryCount']]"
+						level="INFO" doc:name="Logger" />
+				</when>
+				<otherwise>
+						<logger message="Message index value ::::::#[flowVars.messageList[index-1]]"	level="INFO" doc:name="Logger" />
+				</otherwise>
+			</choice>
+			<object-to-string-transformer doc:name="Object to String" />
+			<remove-property propertyName="Content-Type"
+				doc:name="Remove Content-Type" />
+			<jms:outbound-endpoint connector-ref="activemqSender"
+				queue="jms.message.post" doc:name="message to send" />
+		</foreach>
+        <set-payload value="#[flowVars.messageList]" doc:name="Set Payload"/>
+		
+		
+		<object-to-string-transformer doc:name="Object to String" />
+	</flow>
+</mule>

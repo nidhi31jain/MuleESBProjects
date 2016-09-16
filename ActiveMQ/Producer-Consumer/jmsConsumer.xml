@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+	<!-- Queue -jms.single.consumer.single.node -->
+	<jms:activemq-connector name="activemqReceiver"
+		brokerURL="tcp://localhost:61616" validateConnections="true"
+		maxRedelivery="5" numberOfConcurrentTransactedReceivers="1" doc:name="Active MQ">
+		<!-- 
+			<service-overrides 
+			 transactedMessageReceiver="org.mule.transport.jms.GuaranteeOrderDeliveryMessageReceiver" 
+		 	 messageReceiver="org.mule.transport.jms.GuaranteeOrderDeliveryMessageReceiver" /> 
+		-->
+	</jms:activemq-connector>
+
+	<flow name="readSendMessage" processingStrategy="synchronous">
+		<!-- only if added then only dequeed -->
+		<jms:inbound-endpoint queue="jms.message.post"
+			doc:name="jmsReceiver" connector-ref="activemqReceiver">
+			<jms:transaction action="ALWAYS_BEGIN" />
+
+		</jms:inbound-endpoint>
+
+		<set-payload value="Acknowledge - Received Message :::#[payload]"
+			doc:name="AckMessageHeader"></set-payload>
+		<jms:outbound-endpoint queue="jms.ack.post"
+			doc:name="JMSAckMessage" connector-ref="activemqReceiver">
+			<jms:transaction action="ALWAYS_BEGIN" />
+		</jms:outbound-endpoint>
+ 
+		<logger
+			message="::::::::::::::::::::::::::::::: Message Received: #[payload] ::::: Total Message Delivered: #[message.inboundProperties['JMSXDeliveryCount']]"
+			level="INFO" doc:name="Process" />
+	</flow>
+
+
+</mule>
