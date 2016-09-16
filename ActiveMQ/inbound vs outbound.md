@@ -1,6 +1,7 @@
 							Inbound 
 							=======
 							
+							
 <flow name="jms.single.consumer.single.node.trigger"
 		processingStrategy="synchronous">
  		<http:listener config-ref="JMS_Consumer" path="/consumer" doc:name="HTTP" /> 
