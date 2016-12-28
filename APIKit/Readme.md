@@ -22,7 +22,9 @@ RAML:
 
 
 /employeeList
+
 /searchEmpID/{empID}
+
 /delEmp/{empID}
 
 
@@ -38,11 +40,15 @@ apikit:router should be prefixed like
 
 ([operation]-get,put,delete] ):/[RAML endpoint specified] :([apikit:router] id)
 
-<apikit:flow-mapping resource="/employeeList"	action="get" content-type="/text/json" flow-ref="get:/employeeList:employee-config" />
-		 <apikit:flow-mapping resource="/emp/{empID1}"	action="get" content-type="text/json" 
+<apikit:flow-mapping resource="/employeeList"	action="get" content-type="/text/json"
+flow-ref="get:/employeeList:employee-config" />
+
+<apikit:flow-mapping resource="/emp/{empID1}"	action="get" content-type="text/json" 
    flow-ref="get:/searchEmpID/{empID}:employee-config" />
-		 <apikit:flow-mapping resource="/delete/{delempID}"	action="delete" content-type="text/json" 
+   
+<apikit:flow-mapping resource="/delete/{delempID}"	action="delete" content-type="text/json" 
    flow-ref="delete:/delEmp/{empID}:employee-config" />
+   
  </apikit:config>
 
 http://localhost:8081/api/employeeList
