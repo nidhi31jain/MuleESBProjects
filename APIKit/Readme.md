@@ -30,7 +30,7 @@ flow:
 =====
 it looks on RAML above three flows then checks on muleapi.xml message flow 
 
-RAML(employee.raml) --> flow-ref in (messageflow muleapi.xml) -->  flow name  in (messageflow muleapi.xml)
+RAML end point(employee.raml) --> flow-ref in (messageflow muleapi.xml) -->  flow name  in (messageflow muleapi.xml)
 
 apikit:flow-mapping Format
 ==========================
