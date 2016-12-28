@@ -1,0 +1,26 @@
+ {
+      "$schema": "http://json-schema.org/draft-03/schema",
+     "properties":{
+	       
+	       
+	      "id":{
+	         "description":"employee id of emp",
+		      "type":"string",
+		      "minLength": 1,
+		      "maxLength": 3
+	      },
+	        
+	        
+	      "name":{
+	      	"description":"employee name of emp",
+	      	"required":true,
+	      	"type":"string"
+	       },
+	       
+	     "location":{
+	      	"description":"location name of emp",
+	      	"required":true,
+	      	"type":"string"
+	       }
+       }
+  }

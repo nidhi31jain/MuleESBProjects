@@ -1,0 +1,11 @@
+ {
+      "$schema": "http://json-schema.org/draft-03/schema",
+      
+      "properties": {
+                      "id": {
+                          "description": "Employee id of the employee",
+                          "type": "string"
+                      }
+      } 
+ }
+  

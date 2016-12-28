@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.test.app</groupId>
+	<artifactId>test</artifactId>
+	<version>1</version>
+
+	<repositories>
+
+		<repository>
+			<id>central</id>
+			<name>central repository</name>
+			<url>http://mvnrepository.com/</url>
+		</repository>
+		
+		<repository>
+			<id>spring data</id>
+			<name>spring data repository</name>
+			<url>https://mvnrepository.com/artifact/org.springframework.data/spring-data-mongod</url>
+		</repository>
+		
+	</repositories>
+
+	<dependencies>
+
+		<!-- http://mvnrepository.com/artifact/org.springframework/spring-context -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>4.2.6.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>4.2.6.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>4.2.6.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>4.2.6.RELEASE</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>4.2.6.RELEASE</version>
+		</dependency>
+		
+		<!--
+		  if no mongodb driver given
+		  mongo-java-driver-2.14.3.jar gets downloaded.
+		  so better to specify the mongodb driver version.
+		
+		 -->
+  	<dependency>
+		    <groupId>org.mongodb</groupId>
+		    <artifactId>mongo-java-driver</artifactId>
+		    <version>3.4.1</version>
+		</dependency>
+
+ 
+		<!-- mongo -->
+
+
+ 
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-mongodb</artifactId>
+			<version>1.9.6.RELEASE</version>
+		</dependency>
+		
+	
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+			<version>1.12.6.RELEASE</version>
+		</dependency>  
+ 
+
+
+	</dependencies>
+
+	<build>
+		<plugins>
+	<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}\lib
+							</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>

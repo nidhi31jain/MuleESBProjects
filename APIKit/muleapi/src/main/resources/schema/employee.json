@@ -1,0 +1,10 @@
+{
+ "employees":
+ [
+	{
+	 "id":3,
+	 "name":"test1",
+	 "location":"test Location for mule"
+	 }
+  ]
+ }

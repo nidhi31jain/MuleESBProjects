@@ -1,0 +1,49 @@
+#%RAML 0.8
+---
+title: get Employees List
+version: 1.0
+baseUri: http://localhost:8081/api
+documentation:
+  - title: get Employees List
+    content: |
+      To get Employees List
+/employeeList:
+  displayName: Employees
+  #description: |
+  #  A collection of teams that are participating in La Liga. Teams API allow you add, remove and retrieve individual team information from La Liga.
+  get:
+    description: get All emp information
+    responses:
+      200:
+        body:
+          application/json:
+            schema: !include schema/employee-input-schema.json         
+            example: !include schema/employee.json     
+             
+/getEmpID/{empID}:
+  displayName: Employees
+  #description: |
+  #  A collection of teams that are participating in La Liga. Teams API allow you add, remove and retrieve individual team information from La Liga.
+  get:
+    description: get All emp information
+    responses:
+     200:
+        body:
+          application/json:
+            schema: !include schema/employee-input-schema.json         
+            example: !include schema/employee.json    
+            
+          
+/delEmp/{empID}:
+  displayName: Employees
+  #description: |
+  #  A collection of teams that are participating in La Liga. Teams API allow you add, remove and retrieve individual team information from La Liga.
+  delete:
+    description: get All emp information
+    responses:
+     200:
+        body:
+          application/json:
+            schema: !include schema/employee-input-schema.json         
+            example: !include schema/employee.json      
+  

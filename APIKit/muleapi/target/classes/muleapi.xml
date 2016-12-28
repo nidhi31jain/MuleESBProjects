@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:mongo="http://www.mulesoft.org/schema/mule/mongo"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+# #http://www.mulesoft.org/schema/mule/mongo
+http://www.mulesoft.org/schema/mule/mongo/current/mule-mongo.xsd #
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd">
+
+<configuration doc:name="Configuration"> 
+	    <expression-language autoResolveVariables="true">
+    	    <import class="org.mule.util.StringUtils" />
+    	</expression-language>
+	</configuration>
+	<http:listener-config name="httpConnector" host="localhost"
+		port="8081" doc:name="HTTP Listener Configuration" />
+		<!-- it will be tightly coupled since if changing the  -->
+	<!--  <mongo:config name="Mongo_DB" database="mule" doc:name="Mongo DB">
+		<mongo:connection-pooling-profile
+			initialisationPolicy="INITIALISE_ONE" exhaustedAction="WHEN_EXHAUSTED_GROW" />
+	</mongo:config>
+	-->
+	<spring:beans>
+		<spring:import resource="config/spring-dao.xml" />
+	</spring:beans>
+	<apikit:config consoleEnabled="true" consolePath="console"
+		doc:name="Router" name="employee-config" raml="employee.raml">
+		<apikit:flow-mapping resource="/employeeList"	action="get" content-type="/text/json" flow-ref="get:/employeeList:employee-config" />
+		<apikit:flow-mapping resource="/emp/{empID1}"	action="get" content-type="text/json" flow-ref="get:/getEmpID/{empID}:employee-config" />
+		<apikit:flow-mapping resource="/delete/{delempID}"	action="delete" content-type="text/json" flow-ref="delete:/delEmp/{empID}:employee-config" />
+	</apikit:config>
+
+
+
+	<flow name="main">
+		<http:listener config-ref="httpConnector" doc:name="Recieve HTTP request" path="/api/*" />
+		<apikit:router config-ref="employee-config" doc:name="APIkit Router" />
+	</flow>
+
+
+	<flow name="get:/employeeList:employee-config">
+		<expression-component doc:name="Call API">
+			<![CDATA[payload = app.registry["empAPI"].getAllEmpList()]]>
+		</expression-component>
+
+		<set-payload doc:name="Set Payload to Null Payload" value="#[payload]" />
+	</flow>
+
+	<flow name="get:/getEmpID/{empID}:employee-config">
+	
+	 	<expression-component doc:name="Call API"><![CDATA[
+	 		var empId = message.inboundProperties['http.uri.params'].empID;
+			payload = app.registry["empAPI"].searchEmployee(empId);]]>
+	 	</expression-component> 
+	 	
+		<set-payload doc:name="Set Payload to Null Payload" value="#[payload]"/>
+	</flow>
+<!-- app.registry['empAPI'].getTeams(message.inboundProperties['http.uri.params'].delempID); -->
+	<flow name="delete:/delEmp/{empID}:employee-config">
+	
+		<expression-component doc:name="Call API"><![CDATA[
+		var empId = message.inboundProperties['http.uri.params'].empID;
+		payload = app.registry["empAPI"].deleteEmployee(empId);]]>
+		</expression-component> 
+		
+		<set-payload doc:name="Set Payload to Null Payload" value="#[payload]"/>
+	</flow>
+</mule>
