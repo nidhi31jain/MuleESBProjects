@@ -46,6 +46,8 @@ apikit:router should be prefixed like
  </apikit:config>
 
 http://localhost:8081/api/employeeList
+
 http://localhost:8081/api/searchEmpID/1
+
 http://localhost:8081/api/delEmp/1
 
