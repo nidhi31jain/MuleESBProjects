@@ -34,7 +34,7 @@ RAML(employee.raml) --> flow-ref in (messageflow muleapi.xml) -->  flow name  in
 
 apikit:flow-mapping Format
 ==========================
-apikit:router should be prefixed like <<operation-get,put,delete>> :/<<RAML endpoint specified>> :<<apikit:router id>>
+apikit:router should be prefixed like   <operation-get,put,delete> :/<RAML endpoint specified> :<apikit:router id>
 
 <apikit:flow-mapping resource="/employeeList"	action="get" content-type="/text/json" flow-ref="get:/employeeList:employee-config" />
 		 <apikit:flow-mapping resource="/emp/{empID1}"	action="get" content-type="text/json" 
