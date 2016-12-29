@@ -60,6 +60,11 @@ like below should match exactly.
 <flow name="get:/searchEmpID/{empID}:employee-config">
 if for e.g empID named as empId it wont work.
 
+
+it shows error like below 
+ed by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean named 'get:/searchEmpID/{empId}:employee-config' is defined
+
+
 Full config:
 ============
 <apikit:config consoleEnabled="true" consolePath="console"
