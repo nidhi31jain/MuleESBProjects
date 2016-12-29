@@ -47,11 +47,21 @@ apikit:router should be prefixed like
 
 NOTE:
 ====
-apikit:router is for default api console.
+1)apikit:router is for default api console.
 
-apikit:config has other definition of /getEmployeeList,/searchEmpID/{empID} , /delEmp/{empID}
+2)apikit:config has other definition of /getEmployeeList,/searchEmpID/{empID} , /delEmp/{empID}
 
+3) resource="/emp/{empID1}" in apikit:config has no special importance. but flow-ref attribute in <api-kit:config> and 
+name in <flow> has very importance. if even parameter changed naming with caps or lower it won't work.
 
+like below should match exactly.
+
+<apikit:flow-mapping action="get" flow-ref="get:/searchEmpID/{empID}:employee-config" />
+<flow name="get:/searchEmpID/{empID}:employee-config">
+if for e.g empID named as empId it wont work.
+
+Full config:
+============
 <apikit:config consoleEnabled="true" consolePath="console"
 		doc:name="Router" name="employee-config" raml="employee.raml">
 		<apikit:flow-mapping resource="/employeeList"	action="get" content-type="/text/json" flow-ref="get:/employeeList:employee-config" />
