@@ -79,7 +79,7 @@ ed by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean 
 NOTE:
 =====
 
-see it flows from <flow-mapping> to <flow>
+see it flows from [flow-mapping] to [flow]
 
 
 Full config:
