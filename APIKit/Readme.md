@@ -62,6 +62,18 @@ if for e.g empID named as empId it wont work.
 
 
 it shows error like below 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++ Failed to deploy artifact 'muleapi', see below           +
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+org.mule.module.launcher.DeploymentInitException: NoSuchBeanDefinitionException: No bean named 'get:/searchEmpID/{empId}:employee-config' is defined
+
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'employee-config': Cannot create inner bean '(inner bean)#63751a11' of type [org.mule.module.apikit.FlowMapping] while setting bean property 'flowMappings' with key [1]; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name '(inner bean)#63751a11': Cannot resolve reference to bean 'get:/searchEmpID/{empId}:employee-config' while setting bean property 'flow'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean named 'get:/searchEmpID/{empId}:employee-config' is defined
+
+
+Error creating bean with name 'employee-config': Cannot create inner bean '(inner bean)#63751a11' of type [org.mule.module.apikit.FlowMapping] while setting bean property 'flowMappings' with key [1]; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name '(inner bean)#63751a11': Cannot resolve reference to bean 'get:/searchEmpID/{empId}:employee-config' while setting bean property 'flow'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean named 'get:/searchEmpID/{empId}:employee-config' is defined
+
+
+Error creating bean with name '(inner bean)#63751a11': Cannot resolve reference to bean 'get:/searchEmpID/{empId}:employee-config' while setting bean property 'flow'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean named 'get:/searchEmpID/{empId}:employee-config' is defined
 ed by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean named 'get:/searchEmpID/{empId}:employee-config' is defined
 
 
