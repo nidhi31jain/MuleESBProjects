@@ -61,7 +61,7 @@ like below should match exactly.
 if for e.g empID named as empId it wont work.
 
 
-it shows error like below 
+it shows error like below  
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 + Failed to deploy artifact 'muleapi', see below           +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -75,6 +75,11 @@ Error creating bean with name 'employee-config': Cannot create inner bean '(inne
 
 Error creating bean with name '(inner bean)#63751a11': Cannot resolve reference to bean 'get:/searchEmpID/{empId}:employee-config' while setting bean property 'flow'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean named 'get:/searchEmpID/{empId}:employee-config' is defined
 ed by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean named 'get:/searchEmpID/{empId}:employee-config' is defined
+
+NOTE:
+=====
+
+see it flows from <flow-mapping> to <flow>
 
 
 Full config:
