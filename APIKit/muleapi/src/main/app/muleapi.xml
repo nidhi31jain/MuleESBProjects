@@ -33,7 +33,7 @@ http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/a
 	<apikit:config consoleEnabled="true" consolePath="console"
 		doc:name="Router" name="employee-config" raml="employee.raml">
 		<apikit:flow-mapping resource="/employeeList"	action="get" content-type="/text/json" flow-ref="get:/employeeList:employee-config" />
-		<apikit:flow-mapping resource="/emp/{empID1}"	action="get" content-type="text/json" flow-ref="get:/getEmpID/{empID}:employee-config" />
+		<apikit:flow-mapping resource="/emp/{empID1}"	action="get" content-type="text/json" flow-ref="get:/searchEmpID/{empID}:employee-config" />
 		<apikit:flow-mapping resource="/delete/{delempID}"	action="delete" content-type="text/json" flow-ref="delete:/delEmp/{empID}:employee-config" />
 	</apikit:config>
 
@@ -53,7 +53,7 @@ http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/a
 		<set-payload doc:name="Set Payload to Null Payload" value="#[payload]" />
 	</flow>
 
-	<flow name="get:/getEmpID/{empID}:employee-config">
+	<flow name="get:/searchEmpID/{empID}:employee-config">
 	
 	 	<expression-component doc:name="Call API"><![CDATA[
 	 		var empId = message.inboundProperties['http.uri.params'].empID;
