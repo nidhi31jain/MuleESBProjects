@@ -3,7 +3,7 @@ Advantages:
 1)helps to define endpoint and response type(xml,json,text)
 2)It provides validation control like some field is mandtory using include schema validation
            e.g below line in employee.raml. schema: !include schema/employee-input-schema.json  
-3)it provides console environment in .net to test the service.
+3)it provides console environment as like in .net to test the service.
 below code loads employee.raml and based on endpoint (e.g /employeeList,searchEmpID/{empID},/delEmp/{empID})
 configured in raml to render service by redirect to apikit flowref (payload) attribute
 <apikit:config consoleEnabled="true" consolePath="console"
