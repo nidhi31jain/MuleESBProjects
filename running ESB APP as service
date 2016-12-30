@@ -1,9 +1,38 @@
 
+
+you can do in 3 Ways:
+
+PROCEDURE 1:
+==============
 MULE ESB Runtime:
 ==================
 download Mule standalone runtime(without Anypoint Studio) from mule https://developer.mulesoft.com/download-mule-esb-runtime
 mule-standalone-3.8.1.zip and follow below steps:
+set environment variable MULE_HOME - C:\mule-standalone-3.8.1\
 
+1) just go to Anypoint studio right click > export > Any point studio deployable  click -"Any point Studio project to Mule Deployable Archive(includes  Studio Metadata)" click on this to generate *.zip e.g sample.zip will be created.
+just drop the zip file to apps folder like  C:\mule-standalone-3.8.1\apps\loginProvier.zip then it creates folder once start the mule.bat 
+
+PROCEDURE 2:
+==============
+ just go to Anypoint studio right click > export >click "Publish to ApplicaitonRepository" it deploy on mmc(Mule Management console)
+ it is licensed server.
+ 
+ Requirements
+ ============
+To take MMC for a test drive, there are no special technical requirements. Just download the trial version.
+
+To successfully run MMC in production, you need:
+
+A Mule ESB Enterprise instance with a valid enterprise license
+
+The MMC console application file (mmc.war) deployed in a supported web application server
+
+The MMC agent .jar file, which is bundled with the Mule ESB Enterprise instance in versions 3.7.0 and newer. Previous versions of Mule ESB require the agent to be installed separately.
+ 
+
+PROCEDURE 3:
+==============
 1)Download and install Apache Tomcat 6 from the Apache web site following the standard installation instructions.
 
 2)In the Tomcat home directory, add the following line to the conf/server.xml file:
