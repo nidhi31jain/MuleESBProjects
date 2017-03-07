@@ -33,7 +33,7 @@ Register for a Salesforce account.
 
    -Fill in the form for your application, be sure to enable the checkbox labeled Enable OAuth Settings. Then provide a callback URL and list the permissions that your API should obtain.
 
-    -Click Save , then, on the following page, note the consumer key and consumer secret. You will use these values to configure the connector to access Salesforce. 
+   -Click Save , then, on the following page, note the consumer key and consumer secret. You will use these values to configure the connector to access Salesforce. 
     
     
 
